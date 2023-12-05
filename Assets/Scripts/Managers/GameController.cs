@@ -16,6 +16,13 @@ namespace Managers
         #endregion
         
         
+        #region --- Inspector ---
+        
+        [SerializeField] private UiManager _uiManager;
+        
+        #endregion
+        
+        
         #region --- Properties ---
     
         public ICoroutineService CoroutineService { get; private set; }
@@ -40,6 +47,7 @@ namespace Managers
     
         public void SpawnBallWithScore(int score, Vector3 position1, Vector3 position2)
         {
+            _uiManager.UpdateScore(score);
             _ballSpawner.SpawnBallWithScore(score, position1, position2);
         }
         
@@ -66,10 +74,17 @@ namespace Managers
             InitializeGame();
         }
 
+        private void OnDestroy()
+        {
+            _ballSpawner.UnsubscribeFromNextBallDataChanged(_uiManager.UpdateNextBall);
+            Instance = null;
+        }
+
         private void InitializeGame()
         {
             _ballManager = Resources.Load<BallManager>(nameof(BallManager));
             _ballSpawner = new BallSpawner(_ballManager);
+            _ballSpawner.SubscribeToNextBallDataChanged(_uiManager.UpdateNextBall);
             SpawnInitialBall();
         }
     

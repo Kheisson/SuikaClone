@@ -12,6 +12,8 @@ namespace Managers
         
         private readonly BallManager _ballManager;
         private readonly List<Ball> _spawnedBalls = new List<Ball>();
+        private BallData _nextBallData;
+        private event System.Action<BallData> OnNextBallDataChanged;
         
         #endregion
         
@@ -37,9 +39,8 @@ namespace Managers
     
         public void SpawnBall()
         {
-            var ballData = GetRandomBallData();
-
-            LoggerService.Log("Spawning ball {0} with score: {1}", ballData.name, ballData.Score);
+            var ballData = CheckIfNextBallDataExists() ? _nextBallData : GetRandomBallData();
+            
             CreateBallGameObject(ballData);
         }
         
@@ -59,6 +60,16 @@ namespace Managers
             newBall.gameObject.SetActive(true);
         }
         
+        public void SubscribeToNextBallDataChanged(System.Action<BallData> onNextBallDataChanged)
+        {
+            OnNextBallDataChanged += onNextBallDataChanged;
+        }
+        
+        public void UnsubscribeFromNextBallDataChanged(System.Action<BallData> onNextBallDataChanged)
+        {
+            OnNextBallDataChanged -= onNextBallDataChanged;
+        }
+        
         #endregion
         
         
@@ -67,6 +78,23 @@ namespace Managers
         private BallData GetRandomBallData()
         {
             return _ballManager.GetBallData();
+        }
+        
+        private bool CheckIfNextBallDataExists()
+        {
+            if (_nextBallData != null)
+            {
+                return true;
+            }
+
+            SetAndInformNextBallData();
+            return false;
+        }
+
+        private void SetAndInformNextBallData()
+        {
+            _nextBallData = GetRandomBallData();
+            OnNextBallDataChanged?.Invoke(_nextBallData);
         }
 
         private Ball CreateBallGameObject(BallData ballData)
@@ -83,6 +111,8 @@ namespace Managers
             var ball = newBall.AddComponent<Ball>();
             ball.Initialize(ballData);
             _spawnedBalls.Add(ball);
+            
+            LoggerService.Log("Spawning ball {0} with score: {1}", ballData.name, ballData.Score);
                                                     
             return ball;
         }
