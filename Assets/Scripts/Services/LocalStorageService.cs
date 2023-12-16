@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Services
@@ -13,9 +14,9 @@ namespace Services
         
         #region --- Public Methods ---
         
-        public int GetBestScore()
+        public Task<int> GetBestScore()
         {
-            return PlayerPrefs.GetInt(BEST_SCORE_KEY, 0);
+            return Task.FromResult(PlayerPrefs.GetInt(BEST_SCORE_KEY, 0));
         }
 
         public void SaveBestScore(int bestScore)

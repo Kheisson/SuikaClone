@@ -15,10 +15,10 @@ namespace Services
         public delegate void SignedOutHandler();
         public delegate void ExpiredHandler();
         
-        public static event SignedInHandler OnSignedIn;     
-        public static event SignInFailedHandler OnSignInFailed;
-        public static event SignedOutHandler OnSignedOut;
-        public static event ExpiredHandler OnExpired;
+        public event SignedInHandler OnSignedIn;     
+        public event SignInFailedHandler OnSignInFailed;
+        public event SignedOutHandler OnSignedOut;
+        public event ExpiredHandler OnExpired;
         
         #endregion
         
@@ -30,12 +30,15 @@ namespace Services
             try
             {
                 await UnityServices.InitializeAsync();
+                SetupSceneLoaderService();
                 SetupEvents();
             }
             catch (Exception e)
             {
                 LoggerService.LogError(e.Message);
             }
+            
+            DontDestroyOnLoad(gameObject);
         }
         
         #endregion
@@ -49,6 +52,11 @@ namespace Services
             AuthenticationService.Instance.SignInFailed += RaiseOnSignInFailed;
             AuthenticationService.Instance.SignedOut += RaiseOnSignedOut;
             AuthenticationService.Instance.Expired += RaiseOnExpired;
+        }
+        
+        private void SetupSceneLoaderService()
+        {
+            var sceneLoaderService = new SceneLoaderService(this);
         }
 
         private async Task SignInAnonymouslyAsync()

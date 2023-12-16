@@ -1,5 +1,9 @@
+using System.Collections;
 using Data;
+using Services;
+using TMPro;
 using UI;
+using Unity.Services.Authentication;
 using UnityEngine;
 
 namespace Managers
@@ -10,6 +14,7 @@ namespace Managers
         
         [SerializeField] private NextBallView _nextBallView;
         [SerializeField] private ScoreBoxView _scoreView;
+        [SerializeField] private TextMeshProUGUI _playerIdText;
         
         #endregion
         
@@ -29,10 +34,7 @@ namespace Managers
             var newScore = _userDataModel.CurrentScore + addedScore;
             
             UpdateCurrentScoreInternal(newScore);
-            if (newScore > _userDataModel.BestScore)
-            {
-                UpdateBestScoreInternal(newScore);
-            }
+            UpdateBestScoreInternal(newScore);
         }
         
         public void UpdateNextBall(BallData nextBallData)
@@ -45,13 +47,19 @@ namespace Managers
         
         #region --- Private Methods ---
 
-        private void Awake()
+        private async void Awake()
         {
-            _userDataModel = new UserDataModel();
+            _userDataModel = await UserDataModel.CreateAsync(AuthenticationService.Instance.IsSignedIn ? new CloudStorageService() : new LocalStorageService());
             _nextBallModel = new NextBallModel();
+        }
+        
+        private IEnumerator Start()
+        {
+            yield return new WaitUntil(() => UserDataModel.DidFinishSetup);
             
             UpdateCurrentScoreInternal(_userDataModel.CurrentScore);
             UpdateBestScoreInternal(_userDataModel.BestScore);
+            UpdatePlayerIdInternal();
         }
         
         private void UpdateCurrentScoreInternal(int newScore)
@@ -62,7 +70,11 @@ namespace Managers
 
         private void UpdateBestScoreInternal(int newBestScore)
         {
-            _userDataModel.UpdateBestScore(newBestScore);
+            if (!_userDataModel.UpdateBestScore(newBestScore))
+            {
+                return;
+            }
+            
             _scoreView.UpdateBestScore(_userDataModel.BestScore);
         }
 
@@ -70,6 +82,17 @@ namespace Managers
         {
             _nextBallModel.SetNextBallData(nextBallData);
             _nextBallView.UpdateNextBallSprite(_nextBallModel.GetNextBallData());
+        }
+        
+        private void UpdatePlayerIdInternal()
+        {
+            if (AuthenticationService.Instance.IsSignedIn)
+            {
+                _playerIdText.text = $"Player ID: {AuthenticationService.Instance.PlayerId}";
+                return;
+            }
+
+            _playerIdText.text = "";
         }
         
         #endregion

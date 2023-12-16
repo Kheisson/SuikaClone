@@ -1,3 +1,7 @@
+using System;
+using System.Threading.Tasks;
+using Services;
+
 namespace Data
 {
     public class UserDataModel
@@ -6,6 +10,7 @@ namespace Data
         
         private int _currentScore;
         private int _bestScore;
+        private readonly IStorageService _storageService;
         
         #endregion
 
@@ -27,19 +32,50 @@ namespace Data
             }
         }
         
+        public static bool DidFinishSetup
+        {
+            get;
+            private set;
+        }
+        
         #endregion
         
         
+        #region --- Constructor ---
+
+        private UserDataModel(IStorageService storageService)
+        {
+            _storageService = storageService;
+        }
+        
+        #endregion
+        
         #region --- Public Methods ---
+        
+        public static async Task<UserDataModel> CreateAsync(IStorageService storageService)
+        {
+            var userDataModel = new UserDataModel(storageService);
+            userDataModel._bestScore = await userDataModel._storageService.GetBestScore();
+            DidFinishSetup = true;
+            
+            return userDataModel;
+        }
         
         public void UpdateCurrentScore(int newScore)
         {
             _currentScore = newScore;
         }
 
-        public void UpdateBestScore(int newBestScore)
+        public bool UpdateBestScore(int newBestScore)
         {
+            if (newBestScore < _bestScore)
+            {
+                return false;
+            }
+            
             _bestScore = newBestScore;
+            _storageService.SaveBestScore(newBestScore);
+            return true;
         }
         
         #endregion
