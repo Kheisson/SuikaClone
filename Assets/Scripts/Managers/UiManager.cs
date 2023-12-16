@@ -8,8 +8,8 @@ namespace Managers
     {
         #region --- Inspector ---
         
-        [SerializeField] private NextBallView nextBallView;
-        [SerializeField] private ScoreBoxView scoreView;
+        [SerializeField] private NextBallView _nextBallView;
+        [SerializeField] private ScoreBoxView _scoreView;
         
         #endregion
         
@@ -57,19 +57,19 @@ namespace Managers
         private void UpdateCurrentScoreInternal(int newScore)
         {
             _userDataModel.UpdateCurrentScore(newScore);
-            scoreView.UpdateCurrentScore(_userDataModel.CurrentScore);
+            _scoreView.UpdateCurrentScore(_userDataModel.CurrentScore);
         }
 
         private void UpdateBestScoreInternal(int newBestScore)
         {
             _userDataModel.UpdateBestScore(newBestScore);
-            scoreView.UpdateBestScore(_userDataModel.BestScore);
+            _scoreView.UpdateBestScore(_userDataModel.BestScore);
         }
 
         private void UpdateNextBallInternal(BallData nextBallData)
         {
             _nextBallModel.SetNextBallData(nextBallData);
-            nextBallView.UpdateNextBallSprite(_nextBallModel.GetNextBallData());
+            _nextBallView.UpdateNextBallSprite(_nextBallModel.GetNextBallData());
         }
         
         #endregion

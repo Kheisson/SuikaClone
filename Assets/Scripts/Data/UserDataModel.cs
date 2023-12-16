@@ -28,25 +28,13 @@ namespace Data
         }
         
         #endregion
-
         
-        #region --- Constructor ---
-        
-        public UserDataModel()
-        {
-            _currentScore = 0;
-            _bestScore = 0;
-        }
-        
-        #endregion
-
         
         #region --- Public Methods ---
         
         public void UpdateCurrentScore(int newScore)
         {
             _currentScore = newScore;
-            // You might want to check if the current score is higher than the best score here and update accordingly.
         }
 
         public void UpdateBestScore(int newBestScore)
